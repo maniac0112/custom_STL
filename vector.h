@@ -1,4 +1,3 @@
-
 #ifndef VECTOR_H
 #define VECTOR_H
 
@@ -7,6 +6,88 @@
 #include <algorithm>       // For std::copy
 #include <iostream>        // For std::cout (used in reserve())
 
+
+template <typename T, bool IsConst> 
+struct VectorIterator{
+    using value_type = std::conditional_t<IsConst, const T, T>;;
+    using pointer = value_type*;
+    using reference = value_type&; 
+    using iterator_category = std::random_access_iterator_tag;
+    using difference_type = std::ptrdiff_t;
+    
+    VectorIterator(pointer i_ptr){
+        t_ptr = i_ptr; 
+    } 
+    
+    reference operator*() const {
+        return *t_ptr; 
+    }
+    
+    pointer operator->() {
+        return t_ptr; 
+    }
+    
+    VectorIterator& operator++(){
+        //pre increment
+        t_ptr++;
+        return *this; 
+    }
+    
+    VectorIterator operator++(int){
+        //post increment
+        VectorIterator tmp = *this; 
+        t_ptr++;
+        return tmp; 
+    }
+
+    VectorIterator& operator--() {
+        t_ptr--;
+        return *this;
+    }
+
+    VectorIterator operator--(int) {
+        VectorIterator temp = *this;
+        t_ptr--;
+        return temp;
+    }
+
+    VectorIterator operator+(difference_type offset) const {
+        return VectorIterator(t_ptr + offset);
+    }
+
+    VectorIterator operator-(difference_type offset) const {
+        return VectorIterator(t_ptr - offset);
+    }
+
+    difference_type operator-(const VectorIterator& other) const {
+        return t_ptr - other.t_ptr;
+    }
+    
+    VectorIterator& operator+=(difference_type offset) {
+        t_ptr += offset;
+        return *this;
+    }
+
+    VectorIterator& operator-=(difference_type offset) {
+        t_ptr -= offset;
+        return *this;
+    }
+    
+    reference operator[](difference_type index) const {
+        return *(t_ptr + index);
+    }
+    
+    bool operator==(const VectorIterator& other) const { return t_ptr == other.t_ptr; }
+    bool operator!=(const VectorIterator& other) const { return t_ptr != other.t_ptr; }
+    bool operator<(const VectorIterator& other) const { return t_ptr < other.t_ptr; }
+    bool operator>(const VectorIterator& other) const { return t_ptr > other.t_ptr; }
+    bool operator<=(const VectorIterator& other) const { return t_ptr <= other.t_ptr; }
+    bool operator>=(const VectorIterator& other) const { return t_ptr >= other.t_ptr; }
+    
+private:
+    pointer t_ptr;
+};
+    
 template <typename T> 
 class vector{
     
@@ -15,6 +96,8 @@ private:
     int capacity; 
     T* ptr; 
     std::allocator<T> allocator; 
+    using iterator = VectorIterator<T, false>;
+    using const_iterator = VectorIterator<T, true>;
     
     void reserve(int new_capacity){
         std::cout<<"resized \n";
@@ -31,87 +114,6 @@ private:
         capacity = new_capacity;
     }
     
-    struct iterator{
-        
-        using difference_type = std::ptrdiff_t;
-        using value_type = T;
-        using pointer = T*;
-        using reference = T&; 
-        using iterator_category = std::random_access_iterator_tag;
-        
-        iterator(T* i_ptr){
-            t_ptr = i_ptr; 
-        } 
-        
-        reference operator*() const {
-            return *t_ptr; 
-        }
-        
-        pointer operator->() {
-            return t_ptr; 
-        }
-        
-        iterator& operator++(){
-            //pre increment
-            t_ptr++;
-            return *this; 
-        }
-        
-        iterator operator++(int){
-            //post increment
-            iterator tmp = *this; 
-            t_ptr++;
-            return tmp; 
-        }
-
-        iterator& operator--() {
-            t_ptr--;
-            return *this;
-        }
-
-        iterator operator--(int) {
-            iterator temp = *this;
-            t_ptr--;
-            return temp;
-        }
-
-        iterator operator+(difference_type offset) const {
-            return iterator(t_ptr + offset);
-        }
-
-        iterator operator-(difference_type offset) const {
-            return iterator(t_ptr - offset);
-        }
-
-        difference_type operator-(const iterator& other) const {
-            return t_ptr - other.t_ptr;
-        }
-        
-        iterator& operator+=(difference_type offset) {
-            t_ptr += offset;
-            return *this;
-        }
-
-        iterator& operator-=(difference_type offset) {
-            t_ptr -= offset;
-            return *this;
-        }
-        
-        reference operator[](difference_type index) const {
-            return *(t_ptr + index);
-        }
-        
-        bool operator==(const iterator& other) const { return t_ptr == other.t_ptr; }
-        bool operator!=(const iterator& other) const { return t_ptr != other.t_ptr; }
-        bool operator<(const iterator& other) const { return t_ptr < other.t_ptr; }
-        bool operator>(const iterator& other) const { return t_ptr > other.t_ptr; }
-        bool operator<=(const iterator& other) const { return t_ptr <= other.t_ptr; }
-        bool operator>=(const iterator& other) const { return t_ptr >= other.t_ptr; }
-        
-    private:
-        T* t_ptr;
-    };
-
 public: 
     
     vector(): length{0}, capacity{0}, ptr{nullptr}{
@@ -213,6 +215,14 @@ public:
     
     iterator end(){
         return iterator{ptr+length};
+    }
+    
+    const_iterator cbegin() const {
+        return const_iterator{ptr};
+    }
+    
+    const_iterator cend() const{
+        return const_iterator{ptr+length};
     }
 };
 
