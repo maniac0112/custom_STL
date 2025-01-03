@@ -1,6 +1,11 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
+#include <memory>          // For std::allocator
+#include <initializer_list> // For std::initializer_list
+#include <algorithm>       // For std::copy
+#include <iostream>        // For std::cout (used in reserve())
+
 template <typename T> 
 class vector{
 public: 
