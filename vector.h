@@ -1,3 +1,4 @@
+
 #ifndef VECTOR_H
 #define VECTOR_H
 
@@ -8,6 +9,109 @@
 
 template <typename T> 
 class vector{
+    
+private: 
+    int length; 
+    int capacity; 
+    T* ptr; 
+    std::allocator<T> allocator; 
+    
+    void reserve(int new_capacity){
+        std::cout<<"resized \n";
+        
+        T* new_ptr = allocator.allocate(new_capacity);
+        
+        for (int i=0; i<length; i++){
+            allocator.destroy(ptr + i);
+        }
+        
+        // Deallocate old memory and update pointers
+        allocator.deallocate(ptr, capacity);
+        ptr = new_ptr; 
+        capacity = new_capacity;
+    }
+    
+    struct iterator{
+        
+        using difference_type = std::ptrdiff_t;
+        using value_type = T;
+        using pointer = T*;
+        using reference = T&; 
+        using iterator_category = std::random_access_iterator_tag;
+        
+        iterator(T* i_ptr){
+            t_ptr = i_ptr; 
+        } 
+        
+        reference operator*() const {
+            return *t_ptr; 
+        }
+        
+        pointer operator->() {
+            return t_ptr; 
+        }
+        
+        iterator& operator++(){
+            //pre increment
+            t_ptr++;
+            return *this; 
+        }
+        
+        iterator operator++(int){
+            //post increment
+            iterator tmp = *this; 
+            t_ptr++;
+            return tmp; 
+        }
+
+        iterator& operator--() {
+            t_ptr--;
+            return *this;
+        }
+
+        iterator operator--(int) {
+            iterator temp = *this;
+            t_ptr--;
+            return temp;
+        }
+
+        iterator operator+(difference_type offset) const {
+            return iterator(t_ptr + offset);
+        }
+
+        iterator operator-(difference_type offset) const {
+            return iterator(t_ptr - offset);
+        }
+
+        difference_type operator-(const iterator& other) const {
+            return t_ptr - other.t_ptr;
+        }
+        
+        iterator& operator+=(difference_type offset) {
+            t_ptr += offset;
+            return *this;
+        }
+
+        iterator& operator-=(difference_type offset) {
+            t_ptr -= offset;
+            return *this;
+        }
+        
+        reference operator[](difference_type index) const {
+            return *(t_ptr + index);
+        }
+        
+        bool operator==(const iterator& other) const { return t_ptr == other.t_ptr; }
+        bool operator!=(const iterator& other) const { return t_ptr != other.t_ptr; }
+        bool operator<(const iterator& other) const { return t_ptr < other.t_ptr; }
+        bool operator>(const iterator& other) const { return t_ptr > other.t_ptr; }
+        bool operator<=(const iterator& other) const { return t_ptr <= other.t_ptr; }
+        bool operator>=(const iterator& other) const { return t_ptr >= other.t_ptr; }
+        
+    private:
+        T* t_ptr;
+    };
+
 public: 
     
     vector(): length{0}, capacity{0}, ptr{nullptr}{
@@ -102,29 +206,14 @@ public:
         }
         allocator.deallocate(ptr, capacity);
     }
-
-
-private: 
-    int length; 
-    int capacity; 
-    T* ptr; 
-    std::allocator<T> allocator; 
     
-    void reserve(int new_capacity){
-        std::cout<<"resized \n";
-        
-        T* new_ptr = allocator.allocate(new_capacity);
-        
-        for (int i=0; i<length; i++){
-            allocator.destroy(ptr + i);
-        }
-        
-        // Deallocate old memory and update pointers
-        allocator.deallocate(ptr, capacity);
-        ptr = new_ptr; 
-        capacity = new_capacity;
+    iterator begin(){
+        return iterator{ptr};
     }
     
+    iterator end(){
+        return iterator{ptr+length};
+    }
 };
 
 #endif
